@@ -1,15 +1,24 @@
-/**
+import { useGetPuppyQuery, useDeletePuppyMutation } from "../../store/api";
+/*
  * @component
  * Shows comprehensive information about the selected puppy, if there is one.
  * Also provides a button for users to remove the selected puppy from the roster.
  */
 export default function PuppyDetails({ selectedPuppyId, setSelectedPuppyId }) {
+  const { data: player, isLoading, isError } = useGetPuppyQuery(selectedPuppyId);
+  const [deletePuppy, { isLoading: isDeleting }] = useDeletePuppyMutation();
   // TODO: Grab data from the `getPuppy` query
 
   // TODO: Use the `deletePuppy` mutation to remove a puppy when the button is clicked
 
   function removePuppy(id) {
-    setSelectedPuppyId();
+    deletePuppy(id).unwrap()
+      .then(() => {
+        setSelectedPuppyId(null); // Clear the selected puppy after removal
+      })
+      .catch((error) => {
+        console.error("Failed to delete puppy:", error);
+      });
   }
 
   // There are 3 possibilities:
@@ -23,19 +32,23 @@ export default function PuppyDetails({ selectedPuppyId, setSelectedPuppyId }) {
     $details = <p>Loading puppy information...</p>;
   }
   // 3. Information about the selected puppy has returned from the API.
-  else {
+  else if (isError) {
+    $details = <p>Failed to load puppy details.</p>;
+  } else {
     $details = (
       <>
+       
         <h3>
-          {puppy.name} #{puppy.id}
+          {player.name} #{player.id}
         </h3>
-        <p>{puppy.breed}</p>
-        <p>Team {puppy.team?.name ?? "Unassigned"}</p>
-        <button onClick={() => removePuppy(puppy.id)}>
-          Remove from roster
+        <p>{player.breed}</p>
+       
+        <p>Team {player.team?.name ?? "Unassigned"}</p>
+        <button onClick={() => removePuppy(player.id)}disabled={isDeleting}>
+        {isDeleting ? 'Removing...' : 'Remove from roster'}Remove from roster
         </button>
         <figure>
-          <img src={puppy.imageUrl} alt={puppy.name} />
+          <img src={player.imageUrl} alt={player.name} />
         </figure>
       </>
     );

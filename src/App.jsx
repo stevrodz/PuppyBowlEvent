@@ -16,7 +16,7 @@ import "./App.scss";
  * see more details about a specific player, and remove a player from the roster.
  */
 export default function App() {
-  const [selectedPuppyId, setSelectedPuppyId] = useState();
+  const [selectedPuppyId, setSelectedPuppyId] = useState(null);
 
   return (
     <Provider store={store}>

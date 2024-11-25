@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAddPuppyMutation } from "../../store/api"; // Import the mutation hook
 
 /**
  * @component
@@ -7,14 +8,33 @@ import { useState } from "react";
 export default function PuppyForm() {
   const [name, setName] = useState("");
   const [breed, setBreed] = useState("");
+  const [imageUrl, setImageUrl] = useState("https://loremflickr.com/200/300/dog"); // Placeholder image
 
-  // TODO: Use the `addPuppy` mutation to add a puppy when the form is submitted
+  const [addPuppy, { isLoading, error }] = useAddPuppyMutation(); // Use the addPuppy mutation hook
 
+  // Submit handler for the form
   function postPuppy(event) {
     event.preventDefault();
 
-    // Placeholder image w/ random photos of dogs
-    const imageUrl = "https://loremflickr.com/200/300/dog";
+    // Create the new puppy object
+    const newPuppy = {
+      name,
+      breed,
+      imageUrl,
+    };
+
+    // Call the mutation to add the puppy to the roster
+    addPuppy(newPuppy)
+      .unwrap() // This allows us to handle the result or error
+      .then(() => {
+        // Clear the form fields after successful submission
+        setName("");
+        setBreed("");
+      })
+      .catch((err) => {
+        // Handle errors if needed
+        console.error("Failed to add puppy:", err);
+      });
   }
 
   return (
@@ -37,7 +57,9 @@ export default function PuppyForm() {
             onChange={(e) => setBreed(e.target.value)}
           />
         </label>
-        <button>Add to Roster</button>
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? "Adding..." : "Add to Roster"}
+        </button>
         {isLoading && <output>Uploading puppy information...</output>}
         {error && <output>{error.message}</output>}
       </form>
